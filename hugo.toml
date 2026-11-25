@@ -76,8 +76,10 @@ summaryLength = 70
     repoId = "R_kgDOV7Axmw"
     category = "Announcements"
     categoryId = "DIC_kwDOV7Axm84DL64F"
-    mapping = "pathname"
-    strict = "0"
+    # specific + data-term（term 由 comments.html 按源文件路径生成）：
+    # 讨论的键与 URL 无关，换域名、换部署路径、GitHub Pages 与 Worker 都命中同一条讨论
+    mapping = "specific"
+    strict = "1"
     reactionsEnabled = "1"
     emitMetadata = "0"
     inputPosition = "top"

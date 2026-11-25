@@ -2,9 +2,11 @@
 {{- $g := site.Params.giscus -}}
 {{- $enabled := site.Params.comments | default false -}}
 {{- if isset .Params "comments" }}{{ $enabled = .Params.comments }}{{ end -}}
-{{- /* 预览环境（Cloudflare Workers）不挂评论：giscus 按路径建 Discussion，两个域名的路径不同，评论会分裂成两份 */ -}}
-{{- if getenv "HUGO_SITE_PREVIEW" }}{{ $enabled = false }}{{ end -}}
-{{- if and $enabled .IsPage $g $g.repo $g.repoId $g.categoryId -}}
+{{- /* Discussion 的唯一键用「源文件路径」而不是 URL：换域名、换部署路径、GitHub Pages 与 Cloudflare Workers
+       都会命中同一条讨论。front matter 里写 giscusTerm 可以覆盖它 —— 一旦有了评论就别再改。 */ -}}
+{{- $term := .Params.giscusTerm | default "" -}}
+{{- if not $term }}{{ with .File }}{{ $term = replaceRE "/" "-" (replaceRE "\\.md$" "" .Path) }}{{ end }}{{ end -}}
+{{- if and $enabled .IsPage $g $g.repo $g.repoId $g.categoryId $term -}}
 {{- $theme := site.Params.defaultTheme | default "auto" -}}
 {{- $giscusTheme := "preferred_color_scheme" -}}
 {{- if eq $theme "dark" }}{{ $giscusTheme = "dark" }}{{ else if eq $theme "light" }}{{ $giscusTheme = "light" }}{{ end -}}
@@ -15,7 +17,8 @@
           data-repo-id="{{ $g.repoId }}"
           data-category="{{ $g.category }}"
           data-category-id="{{ $g.categoryId }}"
-          data-mapping="{{ $g.mapping | default "pathname" }}"
+          data-mapping="{{ $g.mapping | default "specific" }}"
+          data-term="{{ $term }}"
           data-strict="{{ $g.strict | default "0" }}"
           data-reactions-enabled="{{ $g.reactionsEnabled | default "1" }}"
           data-emit-metadata="{{ $g.emitMetadata | default "0" }}"

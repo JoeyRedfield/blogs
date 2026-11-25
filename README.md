@@ -50,6 +50,15 @@ hugo new content posts/my-post.md
 - **还需要一步**：去 <https://github.com/apps/giscus> 给 `JoeyRedfield/blogs` 装上 Giscus App（只需一次）。没装之前评论区会显示错误
 - 单独关闭某页评论：在该页 front matter 写 `comments: false`（例如 `content/about.md`）
 
+**讨论的键（重要）**：Giscus 把「页面」映射到「Discussion」靠一个 `term`，我们用的是 `mapping = "specific"` + `strict = "1"`，`term` 由 `comments.html` 按**源文件路径**生成 —— `content/posts/hello-hugo.md` → `posts-hello-hugo`。Discussion 的标题就是这个 term。
+
+这样做的原因是 URL 会变、term 不会：
+
+- GitHub Pages 的路径是 `/blogs/posts/hello-hugo/`，Cloudflare Workers 的是 `/posts/hello-hugo/`，用 `mapping = "pathname"` 会分裂成两条互不相干的评论；用 term 则两个站看到的是同一条讨论。
+- 以后把站点迁到 `cszywu.com`（路径从 `/blogs/posts/hello-hugo/` 变成 `/posts/hello-hugo/`），已有评论不会丢。
+
+代价是两条约定：**有评论之后不要改文章的文件名**（改名 = 换 term = 评论失联）；文件名可能撞车或想换 key 时，在 front matter 写 `giscusTerm: 任意稳定字符串` 覆盖它。
+
 **阅读量（不蒜子）**：`layouts/_partials/extend_post_content.html` 在每篇文章末尾输出 `本文阅读 N 次`，`layouts/_partials/extend_head.html` 引入脚本。开关是 `hugo.toml` 的 `[params.busuanzi]`（`enable` / `pagePV`）。它统计的是页面浏览量 PV，数据在 busuanzi 自己的服务上，不落库。
 
 **可选：Umami 访问分析**：`[params.umami]` 默认关闭，`enable = true` 并填 `websiteID` 即可（Umami Cloud 免费额度够个人博客用）。
@@ -105,10 +114,10 @@ hugo new content posts/my-post.md
 
 部署前想在本地校验配置：`npx wrangler deploy --dry-run`（只读配置和 public/，不真的上传）。
 
-**预览与主站的分工。** 主站是 GitHub Pages（`https://joeyredfield.github.io/blogs/`），Worker 那份只当预览。所以 `scripts/cf-build.sh` 里有一行 `export HUGO_SITE_PREVIEW=1`，它带来两个差异：
+**预览与主站的分工。** 主站是 GitHub Pages（`https://joeyredfield.github.io/blogs/`），Worker 那份只当预览。所以 `scripts/cf-build.sh` 里有一行 `export HUGO_SITE_PREVIEW=1`，它带来一个差异（外加评论共用）：
 
 - `layouts/_partials/extend_head.html` 注入 `<meta name="robots" content="noindex, nofollow">`，预览站不进搜索结果，避免同一份内容被收录两次；
-- `layouts/_partials/comments.html` 跳过 giscus。评论是按 giscus 的 `pathname` 映射建 Discussion 的，GitHub Pages 的路径是 `/blogs/posts/hello-hugo/`、Worker 的是 `/posts/hello-hugo/`，两个键不同 → 同一个页面在两处是两份独立评论。预览站索性不挂。
+- 评论不区分环境：`term` 是源文件路径，与域名无关，所以两处看到的是同一条 Discussion（在预览站回复等于在主站回复）。
 
 想让 Worker 反过来当主站时，把那一行删掉（并同步注释里的说明）即可。
 
