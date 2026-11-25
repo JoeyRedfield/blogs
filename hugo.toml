@@ -1,0 +1,97 @@
+baseURL = "https://joeyredfield.github.io/blogs/"
+locale = "zh-cn"
+defaultContentLanguage = "zh"
+hasCJKLanguage = true
+title = "cszywu"
+theme = "PaperMod"
+enableRobotsTXT = true
+enableEmoji = true
+summaryLength = 70
+
+[pagination]
+  pagerSize = 20
+
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+  section = ["HTML", "RSS"]
+
+[minify]
+  disableXML = true
+  minifyOutput = true
+
+[markup]
+  [markup.goldmark.renderer]
+    unsafe = true
+
+[params]
+  env = "production"
+  title = "cszywu"
+  description = "cszywu 的个人博客 — 记录技术、阅读与生活。"
+  keywords = ["cszywu", "博客", "技术", "Hugo"]
+  author = "cszywu"
+  DateFormat = "2006-01-02"
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowShareButtons = false
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowWordCount = true
+  ShowRssButtonInSectionTermList = true
+  UseHugoToc = true
+  ShowToc = true
+  TocOpen = false
+  hideSummary = false
+  hidemeta = false
+  disableSpecial1stPost = false
+  disableScrollToTop = false
+  disableThemeToggle = false
+
+  [params.assets]
+    disableHLJS = false
+    disableFingerprinting = false
+
+  [params.homeInfoParams]
+    Title = "你好，我是 cszywu 👋"
+    Content = """
+在代码与文字之间记录所学所想。这里会写技术笔记、读书摘录，以及一些没头没尾的思考。
+"""
+
+  [params.editPost]
+    URL = "https://github.com/JoeyRedfield/blogs/edit/main/content/"
+    Text = "编辑此页"
+    appendFilePath = true
+
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/JoeyRedfield"
+
+  [[params.socialIcons]]
+    name = "rss"
+    url = "index.xml"
+
+[menu]
+  [[menu.main]]
+    name = "文章"
+    url = "/posts/"
+    weight = 10
+
+  [[menu.main]]
+    name = "归档"
+    url = "/archives/"
+    weight = 20
+
+  [[menu.main]]
+    name = "标签"
+    url = "/tags/"
+    weight = 30
+
+  [[menu.main]]
+    name = "搜索"
+    url = "/search/"
+    weight = 40
+
+  [[menu.main]]
+    name = "关于"
+    url = "/about/"
+    weight = 50
