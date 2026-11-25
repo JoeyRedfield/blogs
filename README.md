@@ -152,3 +152,4 @@ repo:joeyredfield/blogs category:"Announcements" in:body "<sha1(term)>"
 - `static/` — 原样拷贝到根目录的静态资源
 - `themes/PaperMod/` — 主题（submodule）
 - `docs/agents/` — 工程技能约定（issue tracker / triage labels / domain docs）
+- `docs/adr/` — 架构决策记录（主站选择、评论键设计）
