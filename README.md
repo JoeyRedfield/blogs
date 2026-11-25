@@ -25,7 +25,11 @@ hugo --gc --minify
 hugo new content posts/my-post.md
 ```
 
-文章放在 `content/posts/`，front matter 中 `draft: true` 的文章不会进入生产构建；`date` 不要写未来时间，Hugo 默认不构建未来文章。
+文章放在 `content/posts/`，front matter 中 `draft: true` 的文章不会进入生产构建；`date` 不要写未来时间，Hugo 默认不构建未来文章。写完把 `draft` 改成 `false` 再提交。
+
+`archetypes/default.md` 预置了 `title` / `date` / `draft` / `categories` / `tags` / `summary`，并以注释给出可选项（`cover` 封面、`ShowToc`、单页 `comments: false`、改名用的 `giscusTerm`）。`hugo new` 生成的文件自带这些说明。
+
+本地预览草稿用 `hugo server --buildDrafts`；直接用 `hugo` 构建时草稿不会进 `public/`，如果之前构建过草稿，加 `--cleanDestinationDir` 清掉残留。
 
 ## 部署
 
