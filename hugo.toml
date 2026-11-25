@@ -46,6 +46,7 @@ summaryLength = 70
   disableSpecial1stPost = false
   disableScrollToTop = false
   disableThemeToggle = false
+  comments = true
 
   [params.assets]
     disableHLJS = false
@@ -69,6 +70,27 @@ summaryLength = 70
   [[params.socialIcons]]
     name = "rss"
     url = "index.xml"
+
+  [params.giscus]
+    repo = "JoeyRedfield/blogs"
+    repoId = "R_kgDOV7Axmw"
+    category = "Announcements"
+    categoryId = "DIC_kwDOV7Axm84DL64F"
+    mapping = "pathname"
+    strict = "0"
+    reactionsEnabled = "1"
+    emitMetadata = "0"
+    inputPosition = "top"
+    lang = "zh-CN"
+
+  [params.busuanzi]
+    enable = true
+    pagePV = true
+
+  [params.umami]
+    enable = false
+    websiteID = ""
+    src = "https://cloud.umami.is/script.js"
 
 [menu]
   [[menu.main]]

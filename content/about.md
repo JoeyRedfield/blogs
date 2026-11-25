@@ -2,6 +2,7 @@
 title: "关于"
 date: 2026-11-25T09:30:00+08:00
 draft: false
+comments: false
 ---
 
 你好，我是 **cszywu**。

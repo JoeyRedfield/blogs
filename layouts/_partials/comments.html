@@ -1,0 +1,44 @@
+{{- /* Giscus 评论（基于 GitHub Discussions，无后端）。可在 front matter 用 comments: false 单独关闭 */ -}}
+{{- $g := site.Params.giscus -}}
+{{- $enabled := site.Params.comments | default false -}}
+{{- if isset .Params "comments" }}{{ $enabled = .Params.comments }}{{ end -}}
+{{- if and $enabled .IsPage $g $g.repo $g.repoId $g.categoryId -}}
+{{- $theme := site.Params.defaultTheme | default "auto" -}}
+{{- $giscusTheme := "preferred_color_scheme" -}}
+{{- if eq $theme "dark" }}{{ $giscusTheme = "dark" }}{{ else if eq $theme "light" }}{{ $giscusTheme = "light" }}{{ end -}}
+<section class="post-comments" id="comments">
+  <h2 class="post-comments-title">评论</h2>
+  <script src="https://giscus.app/client.js"
+          data-repo="{{ $g.repo }}"
+          data-repo-id="{{ $g.repoId }}"
+          data-category="{{ $g.category }}"
+          data-category-id="{{ $g.categoryId }}"
+          data-mapping="{{ $g.mapping | default "pathname" }}"
+          data-strict="{{ $g.strict | default "0" }}"
+          data-reactions-enabled="{{ $g.reactionsEnabled | default "1" }}"
+          data-emit-metadata="{{ $g.emitMetadata | default "0" }}"
+          data-input-position="{{ $g.inputPosition | default "top" }}"
+          data-theme="{{ $giscusTheme }}"
+          data-lang="{{ $g.lang | default "zh-CN" }}"
+          crossorigin="anonymous"
+          async>
+  </script>
+  <noscript>评论需要 JavaScript，也可以直接去 <a href="https://github.com/{{ $g.repo }}/discussions" target="_blank" rel="noopener">GitHub Discussions</a> 参与讨论。</noscript>
+</section>
+  <script>
+    // 跟随 PaperMod 的明暗主题切换（footer 被 partialCached 缓存，所以同步逻辑放在这里）
+    (() => {
+      const theme = () => (document.documentElement.dataset.theme === "dark" ? "dark" : "light");
+      const push = (t) => {
+        const f = document.querySelector("iframe.giscus-frame");
+        if (f && f.contentWindow) {
+          f.contentWindow.postMessage({ giscus: { setConfig: { theme: t } } }, "https://giscus.app");
+        }
+      };
+      window.addEventListener("load", () => setTimeout(() => push(theme()), 300));
+      document.addEventListener("click", (e) => {
+        if (e.target.closest("#theme-toggle")) setTimeout(() => push(theme()), 80);
+      }, true);
+    })();
+  </script>
+{{- end -}}

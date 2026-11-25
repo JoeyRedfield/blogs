@@ -40,14 +40,47 @@ hugo new content posts/my-post.md
 3. Pages 设置填 custom domain，勾选 Enforce HTTPS
 4. 把 `hugo.toml` 的 `baseURL` 改成 `https://你的域名/`
 
-## 换托管商
+## 评论与阅读统计
 
-`hugo --gc --minify` 产出的 `public/` 是纯静态文件，可直接部署到 Cloudflare Pages、Netlify、Vercel 或任意对象存储：删掉或替换 `.github/workflows/hugo.yaml` 即可。用 Cloudflare Pages 的话会得到 `<项目名>.pages.dev` 免费子域名，构建命令 `hugo --gc --minify`、输出目录 `public`、环境变量 `HUGO_VERSION=0.170.1`。
+两者都是纯前端方案，不需要服务器，也没有数据库。
+
+**评论（Giscus）**：基于 GitHub Discussions。配置在 `hugo.toml` 的 `[params.giscus]`，模板在 `layouts/_partials/comments.html`。
+
+- 仓库的 Discussions 已开启，评论会落到 `Announcements` 分类
+- **还需要一步**：去 <https://github.com/apps/giscus> 给 `JoeyRedfield/blogs` 装上 Giscus App（只需一次）。没装之前评论区会显示错误
+- 单独关闭某页评论：在该页 front matter 写 `comments: false`（例如 `content/about.md`）
+
+**阅读量（不蒜子）**：`layouts/_partials/extend_post_content.html` 在每篇文章末尾输出 `本文阅读 N 次`，`layouts/_partials/extend_head.html` 引入脚本。开关是 `hugo.toml` 的 `[params.busuanzi]`（`enable` / `pagePV`）。它统计的是页面浏览量 PV，数据在 busuanzi 自己的服务上，不落库。
+
+**可选：Umami 访问分析**：`[params.umami]` 默认关闭，`enable = true` 并填 `websiteID` 即可（Umami Cloud 免费额度够个人博客用）。
+
+> 模板注意：PaperMod 用 `partialCached` 缓存 footer，且缓存键只含 Layout/Kind，所以**不要**把与单页相关的逻辑（比如 Giscus 主题同步）放进 `extend_footer.html`，会被别的页面缓存串用。主题同步脚本现在写在 `comments.html` 里。
+
+## 部署到别的平台
+
+`hugo --gc --minify` 产出的 `public/` 是纯静态文件，以下平台都能直接托管同一份源码，**内容不用改**：
+
+| 平台 | 免费地址 | 配置文件 | 说明 |
+|---|---|---|---|
+| GitHub Pages | `joeyredfield.github.io/blogs/` | `.github/workflows/hugo.yaml` | 项目站，路径 = 仓库名；功能最基础 |
+| Cloudflare Pages | `<项目名>.pages.dev` | 面板里填构建命令 | 支持 `_redirects`、`_headers`、边缘函数、PR 预览 |
+| Netlify | `<站点名>.netlify.app` | `netlify.toml`（已备好） | 同上，另有表单/身份认证 |
+
+三家共同需要的构建设定：
+
+- 构建命令：`hugo --gc --minify`
+- 输出目录：`public`
+- 环境变量：`HUGO_VERSION=0.170.1`、`HUGO_ENV=production`；**主题是 submodule，必须递归拉取**（CI 里 `submodules: recursive`，Netlify/CF 需在面板里也开着）
+- Dart Sass：Hugo 编译 SCSS 需要它，`netlify.toml` 和 Actions 里都装了。Hugo **extended** 版自带，普通版没有
+
+绑定自定义域名是在各家面板里加域名 + 配 DNS，和用哪家托管无关；换平台时记得同步改 `hugo.toml` 的 `baseURL`（GitHub Pages 的 workflow 会自动注入，别的平台要自己设）。
 
 ## 目录
 
 - `content/` — 文章与独立页面
-- `layouts/` — 覆盖主题的模板（可选）
+- `layouts/` — 覆盖主题的模板（评论、阅读量、head 扩展）
+- `assets/css/extended/` — 追加样式（自动合并进主题样式表）
+- `netlify.toml` — Netlify 部署配置（GitHub Pages 用不到）
 - `static/` — 原样拷贝到根目录的静态资源
 - `themes/PaperMod/` — 主题（submodule）
 - `docs/agents/` — 工程技能约定（issue tracker / triage labels / domain docs）

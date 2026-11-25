@@ -1,0 +1,9 @@
+{{- /* 不蒜子访问统计 + 可选的分析脚本 */ -}}
+{{- $b := site.Params.busuanzi -}}
+{{- if and $b $b.enable -}}
+<script defer src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+{{- end -}}
+{{- $u := site.Params.umami -}}
+{{- if and $u $u.enable (ne ($u.websiteID | default "") "") -}}
+<script defer src="{{ $u.src | default "https://cloud.umami.is/script.js" }}" data-website-id="{{ $u.websiteID }}"></script>
+{{- end -}}
