@@ -2,6 +2,8 @@
 {{- $g := site.Params.giscus -}}
 {{- $enabled := site.Params.comments | default false -}}
 {{- if isset .Params "comments" }}{{ $enabled = .Params.comments }}{{ end -}}
+{{- /* 预览环境（Cloudflare Workers）不挂评论：giscus 按路径建 Discussion，两个域名的路径不同，评论会分裂成两份 */ -}}
+{{- if getenv "HUGO_SITE_PREVIEW" }}{{ $enabled = false }}{{ end -}}
 {{- if and $enabled .IsPage $g $g.repo $g.repoId $g.categoryId -}}
 {{- $theme := site.Params.defaultTheme | default "auto" -}}
 {{- $giscusTheme := "preferred_color_scheme" -}}

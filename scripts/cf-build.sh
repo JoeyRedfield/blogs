@@ -33,6 +33,9 @@ if ! command -v sass >/dev/null 2>&1; then
   export PATH="/tmp/sass-tool/node_modules/.bin:$PATH"
 fi
 
+# 3.5 标记这是预览环境（Worker）：head 里加 noindex、不挂 giscus 评论。主站是 GitHub Pages。
+export HUGO_SITE_PREVIEW=1
+
 # 4. 构建。SITE_BASE_URL 由 Workers 的“构建变量”注入（例如 https://blogs.xxx.workers.dev/）
 # 必须是绝对地址：baseURL 写成 "/" 会让 PaperMod 的面包屑 JSON-LD 拼坏（它用 replace 把所有斜杠都削掉），
 # Hugo 的压缩器会因此报 "expected comma character or an array or object ending"。

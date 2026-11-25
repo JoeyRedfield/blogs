@@ -105,6 +105,15 @@ hugo new content posts/my-post.md
 
 部署前想在本地校验配置：`npx wrangler deploy --dry-run`（只读配置和 public/，不真的上传）。
 
+**预览与主站的分工。** 主站是 GitHub Pages（`https://joeyredfield.github.io/blogs/`），Worker 那份只当预览。所以 `scripts/cf-build.sh` 里有一行 `export HUGO_SITE_PREVIEW=1`，它带来两个差异：
+
+- `layouts/_partials/extend_head.html` 注入 `<meta name="robots" content="noindex, nofollow">`，预览站不进搜索结果，避免同一份内容被收录两次；
+- `layouts/_partials/comments.html` 跳过 giscus。评论是按 giscus 的 `pathname` 映射建 Discussion 的，GitHub Pages 的路径是 `/blogs/posts/hello-hugo/`、Worker 的是 `/posts/hello-hugo/`，两个键不同 → 同一个页面在两处是两份独立评论。预览站索性不挂。
+
+想让 Worker 反过来当主站时，把那一行删掉（并同步注释里的说明）即可。
+
+变量名带 `HUGO_` 前缀不是随便取的：Hugo 的 `security.funcs.getenv` 默认只放行 `^HUGO_` 和 `^CI$`，普通变量在模板里 `getenv` 拿到的是空串，会静默失效。
+
 ## 目录
 
 - `content/` — 文章与独立页面
