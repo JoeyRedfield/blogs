@@ -73,7 +73,15 @@ hugo new content posts/my-post.md
 - 环境变量：`HUGO_VERSION=0.170.1`、`HUGO_ENV=production`；**主题是 submodule，必须递归拉取**（CI 里 `submodules: recursive`，Netlify/CF 需在面板里也开着）
 - Dart Sass：Hugo 编译 SCSS 需要它，`netlify.toml` 和 Actions 里都装了。Hugo **extended** 版自带，普通版没有
 
-绑定自定义域名是在各家面板里加域名 + 配 DNS，和用哪家托管无关；换平台时记得同步改 `hugo.toml` 的 `baseURL`（GitHub Pages 的 workflow 会自动注入，别的平台要自己设）。
+绑定自定义域名是在各家面板里加域名 + 配 DNS，和用哪家托管无关。
+
+`baseURL` 是唯一容易踩的坑：它决定 CSS/图片/链接的绝对地址。三家都有「本次构建的地址」环境变量，构建时传进去就不会错：
+
+- GitHub Pages：workflow 里用 `--baseURL` 取自 `steps.pages.outputs.base_url`（已配好）
+- Netlify：`netlify.toml` 里用 `--baseURL "$DEPLOY_PRIME_URL"`（已配好，PR 预览也正确）
+- Cloudflare Pages：构建命令加 `--baseURL "$CF_PAGES_URL"`
+
+所以同一份源码可以在三家同时部署、互不干扰，只是绑定的域名不同。
 
 ## 目录
 

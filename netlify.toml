@@ -1,6 +1,7 @@
-# Netlify 部署配置：连接仓库后即可按此构建
+# Netlify 部署配置：在 Netlify 里连上这个仓库即可，无需其他设置
 [build]
-  command = "npm i -g sass@1.108.2 && hugo --gc --minify"
+  # Hugo 普通版不带 Dart Sass，这里装一个，保证 SCSS 能编译
+  command = "npm i -g sass@1.108.2 && hugo --gc --minify --baseURL \"$DEPLOY_PRIME_URL\""
   publish = "public"
 
 [build.environment]
@@ -8,6 +9,7 @@
   HUGO_ENV = "production"
   TZ = "Asia/Shanghai"
 
+# 主题是 submodule，Netlify 默认会递归拉取；若没拉到，在面板 Settings → Build & deploy 里检查
 # 静态站点无需 Netlify Functions；如需重定向写在这里
 # [[redirects]]
 #   from = "/*"
