@@ -63,6 +63,7 @@ hugo new content posts/my-post.md
 | 平台 | 免费地址 | 配置文件 | 说明 |
 |---|---|---|---|
 | GitHub Pages | `joeyredfield.github.io/blogs/` | `.github/workflows/hugo.yaml` | 项目站，路径 = 仓库名；功能最基础 |
+| Cloudflare Workers | `blogs.<子域>.workers.dev` | `wrangler.jsonc` + `scripts/cf-build.sh`（已备好，见下） | 静态资源托管，走 Workers Builds 自动部署 |
 | Cloudflare Pages | `<项目名>.pages.dev` | 面板里填构建命令 | 支持 `_redirects`、`_headers`、边缘函数、PR 预览 |
 | Netlify | `<站点名>.netlify.app` | `netlify.toml`（已备好） | 同上，另有表单/身份认证 |
 
@@ -83,12 +84,35 @@ hugo new content posts/my-post.md
 
 所以同一份源码可以在三家同时部署、互不干扰，只是绑定的域名不同。
 
+### Cloudflare Workers（Workers Builds）
+
+第一次构建失败的根因：Cloudflare 自动检测把「构建命令」填成了 `npx hugo`，而 `hugo` 不是 npm 包，npx 找不到可执行文件 → `npm error could not determine executable to run`。另外即使命令改对，构建镜像自带的 Hugo 是 `extended_0.147.7`（低于 PaperMod 要求的 0.158），也没有 Dart Sass，且不一定拉 submodule。
+
+仓库里已经放好两个文件：
+
+- `wrangler.jsonc` — 声明这是静态资源 Worker：`assets.directory = "./public"`、`not_found_handling = "404-page"`（用 Hugo 生成的 404.html）
+- `scripts/cf-build.sh` — 构建脚本：缺 submodule 就拉、Hugo 版本不对就下 0.170.1 extended（按 `uname -m` 选 amd64/arm64）、缺 Dart Sass 就装到临时目录、最后带 `--baseURL` 构建
+
+面板里改三处（Worker → Settings → Build）：
+
+| 项 | 值 |
+|---|---|
+| Build command | `bash scripts/cf-build.sh` |
+| Deploy command | `npx wrangler deploy`（默认值，不用改） |
+| Build variables | `SITE_BASE_URL = https://blogs.<你的子域>.workers.dev/` |
+
+**`SITE_BASE_URL` 要设成绝对地址**（`https://blogs.<你的子域>.workers.dev/`），不能图省事写 `/`：PaperMod 的面包屑 JSON-LD 里用 `replace .Parent.Permalink site.Home.Permalink ""` 削前缀，baseURL 是 `/` 时它会把所有斜杠都删掉，于是 JSON-LD 少一个逗号，Hugo 压缩器直接报 `expected comma character or an array or object ending`，构建失败。不设这个变量时脚本会回退到 `hugo.toml` 里的 baseURL（能构建，但站内绝对链接会指向 GitHub Pages），所以请把它当必填。以后绑了自定义域名再改成 `https://cszywu.com/`。
+
+部署前想在本地校验配置：`npx wrangler deploy --dry-run`（只读配置和 public/，不真的上传）。
+
 ## 目录
 
 - `content/` — 文章与独立页面
 - `layouts/` — 覆盖主题的模板（评论、阅读量、head 扩展）
 - `assets/css/extended/` — 追加样式（自动合并进主题样式表）
 - `netlify.toml` — Netlify 部署配置（GitHub Pages 用不到）
+- `wrangler.jsonc` — Cloudflare Workers 静态资源配置
+- `scripts/cf-build.sh` — Cloudflare Workers 的构建脚本
 - `static/` — 原样拷贝到根目录的静态资源
 - `themes/PaperMod/` — 主题（submodule）
 - `docs/agents/` — 工程技能约定（issue tracker / triage labels / domain docs）
