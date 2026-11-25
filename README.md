@@ -57,7 +57,25 @@ hugo new content posts/my-post.md
 - GitHub Pages 的路径是 `/blogs/posts/hello-hugo/`，Cloudflare Workers 的是 `/posts/hello-hugo/`，用 `mapping = "pathname"` 会分裂成两条互不相干的评论；用 term 则两个站看到的是同一条讨论。
 - 以后把站点迁到 `cszywu.com`（路径从 `/blogs/posts/hello-hugo/` 变成 `/posts/hello-hugo/`），已有评论不会丢。
 
-代价是两条约定：**有评论之后不要改文章的文件名**（改名 = 换 term = 评论失联）；文件名可能撞车或想换 key 时，在 front matter 写 `giscusTerm: 任意稳定字符串` 覆盖它。
+### term 到底怎么匹配（`strict` 模式的坑）
+
+giscus 不是「按标题找」，`strict = "1"` 时它发的 GraphQL 搜索是：
+
+```
+repo:joeyredfield/blogs category:"Announcements" in:body "<sha1(term)>"
+```
+
+也就是在讨论**正文**里找 `<!-- sha1: ... -->` 这个隐藏注释（giscus 建讨论时自动写入，哈希的是当时的标题/term）。`strict = "0"` 才是 `in:title "<term>"` 的模糊搜索。
+
+这带来一个反直觉的后果：**手动改讨论标题没用**，strict 模式不认标题；要迁移一条已有讨论，得改它正文里的 sha1 值 —— 或者干脆别改 term。
+
+### 约定
+
+- **有评论之后别改文章文件名**（改名 = 换 term = 评论失联）。真要改，在 front matter 写 `giscusTerm: <旧的 term>` 把键钉住，评论立刻回来。
+- 文件名撞车或想换 key 时，同样用 front matter 的 `giscusTerm` 覆盖。
+- 已知的撞键组合只有一个：`content/posts-foo.md`（→ `posts-foo`）和 `content/posts/foo.md`（→ `posts-foo`），因为脚本是把路径里的 `/` 换成 `-`。
+- 多语言：`hello-hugo.en.md` → `posts-hello-hugo.en`，中英文各一条讨论。
+- 另一个仓库 = 另一个讨论空间（giscus 绑 `repoId`），键相同也不会串。
 
 **阅读量（不蒜子）**：`layouts/_partials/extend_post_content.html` 在每篇文章末尾输出 `本文阅读 N 次`，`layouts/_partials/extend_head.html` 引入脚本。开关是 `hugo.toml` 的 `[params.busuanzi]`（`enable` / `pagePV`）。它统计的是页面浏览量 PV，数据在 busuanzi 自己的服务上，不落库。
 
